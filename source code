@@ -1,0 +1,45 @@
+import numpy as np
+import argparse
+import cv2
+import os
+
+MODEL_MEAN_VALUES = (78.4263377603, 87.7689143744, 114.895847746)
+AGE_BUCKETS = ["(0-2)", "(4-6)", "(8-12)", "(15-20)", "(25-32)", "(38-43)", "(48-53)", "(60-100)"]
+
+ap = argparse.ArgumentParser()
+ap.add_argument("-i", "--image", required=True, help="C:\Users\wW\detec1\wuzzu.jpg")
+ap.add_argument("-f", "--face", required=True, help="C:\Users\wW\detec1\res10_300x300_ssd_iter_140000.caffemodel")
+ap.add_argument("-a", "--age", required=True, help="C:\Users\wW\detec1\age_net.caffemodel")
+ap.add_argument("-c", "--confidence", type=float, default=0.5, help="minimum probability to filter weak detections")
+args = vars(ap.parse_args())
+
+face_proto = os.path.sep.join([args["face"], "deploy.prototxt"])
+face_model = os.path.sep.join([args["face"], "res10_300x300_ssd_iter_140000.caffemodel"])
+face_net = cv2.dnn.readNetFromCaffe(face_proto, face_model)
+
+age_proto = os.path.sep.join([args["age"], "age_deploy.prototxt"])
+age_model = os.path.sep.join([args["age"], "age_net.caffemodel"])
+age_net = cv2.dnn.readNetFromCaffe(age_proto, age_model)
+
+image = cv2.imread(args["image"])
+
+(h, w) = image.shape[:2]
+blob = cv2.dnn.blobFromImage(cv2.resize(image, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
+face_net.setInput(blob)
+detections = face_net.forward()
+
+for i in range(0, detections.shape[2]):
+    confidence = detections[0, 0, i, 2]
+    if confidence > args["confidence"]:
+        box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+        (startX, startY, endX, endY) = box.astype("int")
+        face_roi = image[startY:endY, startX:endX]
+        face_blob = cv2.dnn.blobFromImage(face_roi, 1.0, (227, 227), MODEL_MEAN_VALUES, swapRB=False)
+        age_net.setInput(face_blob)
+        preds = age_net.forward()
+        i = preds[0].argmax()
+        age = AGE_BUCKETS[i]
+        age_confidence = preds[0][i]
+        print(f"Age: {age} ({age_confidence:.2f}%)")
+        gender = "Unknown"
+        print(f"Gender: {gender}")
