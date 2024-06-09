@@ -7,7 +7,7 @@ MODEL_MEAN_VALUES = (78.4263377603, 87.7689143744, 114.895847746)
 AGE_BUCKETS = ["(0-2)", "(4-6)", "(8-12)", "(15-20)", "(25-32)", "(38-43)", "(48-53)", "(60-100)"]
 
 ap = argparse.ArgumentParser()
-ap.add_argument("-i", "--image", required=True, help="C:\Users\wW\detec1\wuzzu.jpg")
+ap.add_argument("-i", "--image", required=True, help="C:\Users\wW\detec1\wuzzu.jpeg")
 ap.add_argument("-f", "--face", required=True, help="C:\Users\wW\detec1\res10_300x300_ssd_iter_140000.caffemodel")
 ap.add_argument("-a", "--age", required=True, help="C:\Users\wW\detec1\age_net.caffemodel")
 ap.add_argument("-c", "--confidence", type=float, default=0.5, help="minimum probability to filter weak detections")
